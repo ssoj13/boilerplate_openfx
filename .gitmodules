@@ -1,0 +1,6 @@
+[submodule "openfx"]
+	path = openfx
+	url = git@github.com:AcademySoftwareFoundation/openfx.git
+[submodule "openfx-misc"]
+	path = openfx-misc
+	url = git@github.com:NatronGitHub/openfx-misc.git
