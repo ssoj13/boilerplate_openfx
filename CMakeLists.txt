@@ -1,18 +1,12 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(colorFill VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Include vcpkg toolchain file if not already set
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "Vcpkg toolchain file")
-endif()
-
 # Find OpenFX package
-find_package(unofficial-openfx CONFIG REQUIRED)
+find_package(openfx REQUIRED)
 
 # Add source files
 set(SOURCES
@@ -29,13 +23,7 @@ set_target_properties(colorFill PROPERTIES
 )
 
 # Link against OpenFX
-target_link_libraries(colorFill PRIVATE unofficial::openfx::OpenFx)
-
-# Include OpenFX headers
-target_include_directories(colorFill PRIVATE 
-    ${OpenFX_INCLUDE_DIRS}
-    ${OpenFX_INCLUDE_DIRS}/Support
-)
+target_link_libraries(colorFill PRIVATE openfx::openfx)
 
 # Set installation directory
 install(TARGETS colorFill

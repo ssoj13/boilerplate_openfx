@@ -16,10 +16,4 @@ private:
     OFX::RGBAParam *_color;
 };
 
-class ColorFillPluginFactory : public OFX::PluginFactoryHelper<ColorFillPluginFactory> {
-public:
-    ColorFillPluginFactory();
-    virtual void describe(OFX::ImageEffectDescriptor &desc) override final;
-    virtual void describeInContext(OFX::ImageEffectDescriptor &desc, OFX::ContextEnum context) override final;
-    virtual OFX::ImageEffect* createInstance(OfxImageEffectHandle handle, OFX::ContextEnum context) override final;
-};
+// ColorFillPluginFactory will be declared by mDeclarePluginFactory macro

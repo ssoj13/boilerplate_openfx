@@ -1,10 +1,14 @@
 #include "colorFill.h"
 #include "ofxsImageEffect.h"
 #include "ofxsMultiThread.h"
+#include "ofxCore.h"
+#include "ofxPixels.h"
 
 #include <cstring>
 #include <memory>
 #include <algorithm>
+
+using namespace OFX;
 
 ColorFillPlugin::ColorFillPlugin(OfxImageEffectHandle handle)
     : ImageEffect(handle)
@@ -42,9 +46,7 @@ void ColorFillPlugin::render(const OFX::RenderArguments &args)
     }
 }
 
-ColorFillPluginFactory::ColorFillPluginFactory()
-    : PluginFactoryHelper<ColorFillPluginFactory>("com.example.ColorFill", 1, 0)
-{}
+mDeclarePluginFactory(ColorFillPluginFactory, {}, {});
 
 void ColorFillPluginFactory::describe(OFX::ImageEffectDescriptor &desc)
 {
@@ -80,4 +82,15 @@ OFX::ImageEffect* ColorFillPluginFactory::createInstance(OfxImageEffectHandle ha
     return new ColorFillPlugin(handle);
 }
 
-OFXS_PLUGIN_FACTORY(ColorFillPluginFactory, "com.example.ColorFill", 1, 0);
+static ColorFillPluginFactory p("com.example.ColorFill", 1, 0);
+
+namespace OFX 
+{
+    namespace Plugin 
+    {
+        void getPluginIDs(OFX::PluginFactoryArray &ids)
+        {
+            ids.push_back(&p);
+        }
+    }
+}

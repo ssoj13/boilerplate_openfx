@@ -1,1 +1,0 @@
-vcpkg install openfx opengl

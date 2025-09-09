@@ -1,11 +1,18 @@
 @echo off
 cls
-::rd /s /q build
-mkdir build
-cd build
-::call "C:\Programs\Vs\22\VC\Auxiliary\Build\vcvars64.bat"
-cmake ../ -G "Visual Studio 17 2022" "-DCMAKE_TOOLCHAIN_FILE=C:/Vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows" "-DOFX_SDK_PATH=./openfx" && cmake --build . --target ALL_BUILD --config Release
-:: --log-level ERROR
+
+echo Installing Conan dependencies...
+conan install . --output-folder=build --build=missing --settings=build_type=Release
+
+echo Configuring CMake with Conan toolchain...
+cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=build/build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+
+echo Building project...
+cmake --build build --config Release
+
+echo Installing plugin...
+cmake --install build --config Release
+
+echo Build complete!
 pause
-cmake -P cmake_install.cmake
 
