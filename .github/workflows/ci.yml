@@ -8,13 +8,8 @@ on:
 
 jobs:
   build:
-    name: Build ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        build_type: [Release]
+    name: Build Windows
+    runs-on: windows-latest
 
     steps:
     - name: Checkout
@@ -36,28 +31,22 @@ jobs:
 
     - name: Install dependencies
       run: |
-        conan install . --output-folder=build --build=missing --settings=build_type=${{ matrix.build_type }}
+        conan install . --output-folder=build --build=missing --settings=build_type=Release
 
-    - name: Configure CMake (Windows)
-      if: runner.os == 'Windows'
+    - name: Configure CMake
       run: |
-        cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=build/build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-
-    - name: Configure CMake (Unix)
-      if: runner.os != 'Windows'
-      run: |
-        cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build/build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=build/build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       run: |
-        cmake --build build --config ${{ matrix.build_type }}
+        cmake --build build --config Release
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: openfx-plugin-${{ matrix.os }}-${{ matrix.build_type }}
+        name: openfx-plugin-windows
         path: |
-          build/${{ matrix.build_type }}/*.ofx*
+          build/Release/*.ofx*
           build/**/*.ofx*
         retention-days: 7
 

@@ -13,7 +13,7 @@ A minimal, production-ready OpenFX plugin template using **Conan** for dependenc
 - **ColorFill Plugin** - Simple example that fills image with solid color
 - **Modern C++** - Clean, well-structured code using OpenFX C++ Support Library
 - **Conan Integration** - Automatic dependency management (no git submodules)
-- **Cross-Platform** - Windows/Linux/macOS support via CMake
+- **Windows Ready** - Optimized for Windows development with Visual Studio
 - **Proper Bundle Structure** - Ready for DaVinci Resolve, Nuke, After Effects, etc.
 
 ## 📁 Project Structure
@@ -33,7 +33,7 @@ A minimal, production-ready OpenFX plugin template using **Conan** for dependenc
 ### Prerequisites
 - **CMake 3.15+**
 - **Conan 2.0+** (`pip install conan`)
-- **Visual Studio 2019+** (Windows) or **GCC/Clang** (Linux/macOS)
+- **Visual Studio 2019+** (Windows)
 
 ### Build
 ```bash
@@ -41,14 +41,8 @@ A minimal, production-ready OpenFX plugin template using **Conan** for dependenc
 git clone <your-repo>
 cd boilerplate_openfx
 
-# Windows
+# Windows - just run the build script
 build.cmd
-
-# Linux/macOS
-conan install . --output-folder=build --build=missing --settings=build_type=Release
-cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build/build/generators/conan_toolchain.cmake
-cmake --build build --config Release
-cmake --install build --config Release
 ```
 
 ## 🔧 Customizing for Your Plugin
