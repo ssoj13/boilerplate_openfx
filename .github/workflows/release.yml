@@ -24,12 +24,12 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Install Conan
       run: |
@@ -65,7 +65,7 @@ jobs:
         find build -name "*.bundle" -exec cp -r {} release/ \; || true
 
     - name: Upload Release Assets
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: openfx-plugin-${{ matrix.platform }}
         path: release/
@@ -77,10 +77,10 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v5
       with:
         path: artifacts
       

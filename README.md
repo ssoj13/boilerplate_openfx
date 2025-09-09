@@ -1,6 +1,7 @@
 # OpenFX Plugin Boilerplate
 
-[![CI](https://github.com/yourusername/boilerplate_openfx/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/boilerplate_openfx/actions/workflows/ci.yml)
+<!-- Replace YOUR_USERNAME/YOUR_REPO with your actual GitHub repository -->
+[![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Conan](https://img.shields.io/badge/Conan-2.0+-blue.svg)](https://conan.io/)
 [![OpenFX](https://img.shields.io/badge/OpenFX-1.4+-green.svg)](https://openeffects.org/)
@@ -52,14 +53,15 @@ cmake --install build --config Release
 
 ## 🔧 Customizing for Your Plugin
 
-1. **Rename** `colorFill.*` files to your plugin name
-2. **Update** plugin identifier in `src/colorFill.cpp`:
+1. **Update README badges** - Replace `YOUR_USERNAME/YOUR_REPO` with your GitHub details
+2. **Rename** `colorFill.*` files to your plugin name
+3. **Update** plugin identifier in `src/colorFill.cpp`:
    ```cpp
    static ColorFillPluginFactory p("com.yourcompany.YourPlugin", 1, 0);
    ```
-3. **Modify** `CMakeLists.txt` project name and output
-4. **Implement** your image processing logic in `render()` function
-5. **Add parameters** in `describeInContext()`
+4. **Modify** `CMakeLists.txt` project name and output
+5. **Implement** your image processing logic in `render()` function
+6. **Add parameters** in `describeInContext()`
 
 ## 🏗 Why This Template?
 
