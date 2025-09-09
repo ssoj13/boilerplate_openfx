@@ -1,5 +1,10 @@
 # OpenFX Plugin Boilerplate
 
+[![CI](https://github.com/yourusername/boilerplate_openfx/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/boilerplate_openfx/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Conan](https://img.shields.io/badge/Conan-2.0+-blue.svg)](https://conan.io/)
+[![OpenFX](https://img.shields.io/badge/OpenFX-1.4+-green.svg)](https://openeffects.org/)
+
 A minimal, production-ready OpenFX plugin template using **Conan** for dependency management. Start building OpenFX plugins instantly without dealing with complex build setups.
 
 ## 🎯 What's Included
@@ -69,6 +74,23 @@ cmake --install build --config Release
 - `openfx/[>=1.4.0]` - OpenFX API and Support Library
 - `expat` - XML parsing (transitive)
 - `opengl/system` - OpenGL headers (transitive)
+
+## 🚀 Releases
+
+Create releases by pushing git tags:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+This triggers automatic builds for Windows/Linux/macOS and creates a GitHub release with plugin binaries.
+
+## 🔧 Status Badges Explained
+
+- **CI Badge** - Shows if the latest build passed/failed
+- **License Badge** - MIT license indicator  
+- **Conan Badge** - Conan package manager version
+- **OpenFX Badge** - OpenFX API compatibility
 
 ## License
 
