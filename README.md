@@ -1,5 +1,7 @@
 # OpenFX Plugin Boilerplate
 
+![DaVinci Resolve Plugin](docs/davinci20.png)
+
 <!-- Replace YOUR_USERNAME/YOUR_REPO with your actual GitHub repository -->
 [![CI](https://github.com/ssoj13/boilerplate_openfx/actions/workflows/ci.yml/badge.svg)](https://github.com/ssoj13/boilerplate_openfx/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
