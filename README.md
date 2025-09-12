@@ -133,4 +133,4 @@ MIT
 
 ## Acknowledgements
 
-Special thanks to [Claude Code](https://claude.ai/code) and [Qwen](https://qwenlm.github.io/) for simplifying boring tasks and tremendous help with development.
+Special thanks to [Claude Code](https://www.anthropic.com/claude-code) and [Qwen Code](https://github.com/QwenLM/qwen-code) for simplifying boring tasks and tremendous help with development.
