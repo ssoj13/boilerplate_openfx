@@ -8,6 +8,10 @@
 Minimal OpenFX plugin template with Conan. No complex dependency management, just clone and build.
 Add your logic and get your plug-in ready in no time.
 
+
+![DaVinci Resolve Plugin](docs/davinci20.png)
+
+
 **What you get:**
 - ColorFill example plugin (fills image with solid color)
 - C++14 with OpenFX C++ wrappers (no raw C API)
