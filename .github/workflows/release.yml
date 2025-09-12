@@ -51,31 +51,36 @@ jobs:
         echo "=== Looking for compiled plugin files ==="
         dir /s build | findstr "\.ofx"
         
-        echo "=== Creating plugin bundle structure ==="
+        echo "=== Creating release package ==="
         mkdir release 2>nul || echo Directory exists
         mkdir "release\colorFill.ofx.bundle\Contents\Win64" 2>nul || echo Bundle dir exists
         
-        echo "=== Copying plugin files ==="
-        if exist "build\Release\*.ofx.dll" (
-          copy "build\Release\*.ofx.dll" "release\colorFill.ofx.bundle\Contents\Win64\"
-          copy "build\Release\*.ofx.dll" release\
-        )
-        if exist "build\Release\*.ofx.lib" copy "build\Release\*.ofx.lib" release\
-        
-        echo "=== Checking for runtime dependencies ==="
-        if exist "build\Release\*.dll" (
-          echo Found additional DLLs:
-          dir "build\Release\*.dll"
-          copy "build\Release\*.dll" "release\colorFill.ofx.bundle\Contents\Win64\" 2>nul || echo No extra DLLs
+        echo "=== Copying plugin binary ==="
+        if exist "build\Release\*.ofx" (
+          copy "build\Release\*.ofx" "release\colorFill.ofx.bundle\Contents\Win64\"
+          copy "build\Release\*.ofx" release\
+          echo Plugin binary copied successfully
+        ) else (
+          echo ERROR: No .ofx files found in build\Release
+          dir "build\Release"
         )
         
-        echo "=== Copying license and documentation ==="
+        echo "=== Copying generated Info.plist ==="
+        set PLIST_SRC=build\C\Program Files\Common Files\OFX\Plugins\Joss_examples\colorFill.ofx.bundle\Contents\Info.plist
+        if exist "%PLIST_SRC%" (
+          copy "%PLIST_SRC%" "release\colorFill.ofx.bundle\Contents\"
+          echo Info.plist copied from CMake generated location
+        ) else (
+          echo ERROR: Info.plist not found at expected location: %PLIST_SRC%
+          echo Build directory contents:
+          dir /s build
+          exit /b 1
+        )
+        
+        echo "=== Copying documentation ==="
         if exist "LICENSE*" copy "LICENSE*" release\
         if exist "README.md" copy "README.md" release\
         if exist "CHANGELOG*" copy "CHANGELOG*" release\
-        
-        echo "=== Copying bundle metadata ==="
-        copy "Info.plist" "release\colorFill.ofx.bundle\Contents\" 2>nul || echo "Info.plist not found"
         
         echo "=== Creating README for users ==="
         echo ColorFill OpenFX Plugin - Installation Instructions > release\INSTALL.txt
