@@ -1,20 +1,18 @@
 # OpenFX Plugin Boilerplate
 
-![DaVinci Resolve Plugin](docs/davinci20.png)
-
-<!-- Replace YOUR_USERNAME/YOUR_REPO with your actual GitHub repository -->
 [![CI](https://github.com/ssoj13/boilerplate_openfx/actions/workflows/ci.yml/badge.svg)](https://github.com/ssoj13/boilerplate_openfx/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Conan](https://img.shields.io/badge/Conan-2.0+-blue.svg)](https://conan.io/)
 [![OpenFX](https://img.shields.io/badge/OpenFX-1.4+-green.svg)](https://openeffects.org/)
 
-Minimal OpenFX plugin template with Conan. No bullshit dependency management, just clone and build.
+Minimal OpenFX plugin template with Conan. No complex dependency management, just clone and build.
+Add your logic and get your plug-in ready in no time.
 
 **What you get:**
 - ColorFill example plugin (fills image with solid color)
 - C++14 with OpenFX C++ wrappers (no raw C API)
 - Conan handles OpenFX SDK (no git submodules)
-- Windows/Visual Studio focused
+- Windows/CMakelists focused
 - Proper .ofx bundle structure for hosts
 
 ## 📁 Project Structure
@@ -118,7 +116,7 @@ void YourPlugin::render(const OFX::RenderArguments &args) {
 **Crashes:** Null pointers, wrong parameter types  
 **No parameters:** Check `describeInContext()` function
 
-## Releases
+## Github Actions and Releases
 
 Push tags to trigger Windows builds:
 ```bash
@@ -129,4 +127,6 @@ git tag v1.0.0 && git push origin v1.0.0
 
 MIT
 
+## Acknowledgements
 
+Special thanks to [Claude Code](https://claude.ai/code) and [Qwen](https://qwenlm.github.io/) for simplifying boring tasks and tremendous help with development.
