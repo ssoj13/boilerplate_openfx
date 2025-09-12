@@ -23,8 +23,8 @@ Minimal OpenFX plugin template with Conan. No bullshit dependency management, ju
 │   └── colorFill.cpp       # Plugin implementation
 ├── CMakeLists.txt          # Build configuration
 ├── conanfile.py           # Dependencies (OpenFX, etc.)
-├── build.cmd              # Windows build script
-└── Info.plist            # OpenFX bundle metadata
+├── build.cmd              # Windows build script  
+└── Info.plist.in          # OpenFX bundle template
 ```
 
 ## Build
@@ -40,24 +40,17 @@ cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE="build/gen
 cmake --build build --config Release
 ```
 
-Output: `build/Release/colorFill.ofx.dll`
+Output: `build/Release/colorFill.ofx`
 
-## Installation
+## Installation  
 
-Copy the .ofx.dll to your host's plugin directory:
+**Auto-install:** Run `cmake --install build --config Release`  
+Installs to: `C:\Program Files\Common Files\OFX\Plugins\Joss_examples\colorFill.ofx.bundle\`
 
-**Nuke:** `C:\Program Files\Nuke##\plugins\`  
-**Resolve:** `C:\Program Files\Blackmagic Design\DaVinci Resolve\OFX\Plugins\`  
-**User folder:** `%USERPROFILE%\AppData\Roaming\OFX\Plugins\`
-
-For proper bundle structure, create:
-```
-YourPlugin.ofx.bundle/
-  Contents/
-    Win64/
-      YourPlugin.ofx.dll
-    Info.plist
-```
+**Manual install:** Copy `.ofx` file to:
+- **Nuke:** `C:\Program Files\Nuke##\plugins\`  
+- **Resolve:** `C:\Program Files\Blackmagic Design\DaVinci Resolve\OFX\Plugins\`  
+- **User:** `%USERPROFILE%\AppData\Roaming\OFX\Plugins\`
 
 ## Usage
 

@@ -8,29 +8,54 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Find OpenFX package
 find_package(openfx REQUIRED)
 
-# Add source files
-set(SOURCES
-    src/colorFill.cpp
-)
+# Set custom plugin installation directory
+if(NOT PLUGIN_INSTALLDIR)
+  if(WIN32)
+    set(PLUGIN_INSTALLDIR "C:/Program Files/Common Files/OFX/Plugins/Joss_examples")
+  elseif(APPLE)
+    set(PLUGIN_INSTALLDIR "/Library/OFX/Plugins/Joss_examples")
+  elseif(UNIX)
+    set(PLUGIN_INSTALLDIR "/usr/OFX/Plugins/Joss_examples")
+  else()
+    set(PLUGIN_INSTALLDIR "/unknown-os")
+  endif()
+endif()
+
+# Set architecture directory
+if(WIN32)
+  set(ARCHDIR "Win64")
+elseif(APPLE)
+  set(ARCHDIR "MacOS")
+elseif(UNIX)
+  set(ARCHDIR "Linux-x86-64")
+else()
+  set(ARCHDIR "unknown-arch")
+endif()
 
 # Create shared library
-add_library(colorFill SHARED ${SOURCES})
+add_library(colorFill SHARED src/colorFill.cpp)
 
-# Set output name and prefix
+# Set OpenFX plugin properties
 set_target_properties(colorFill PROPERTIES 
     PREFIX ""
-    OUTPUT_NAME "colorFill.ofx"
+    SUFFIX ".ofx"
+    C_VISIBILITY_PRESET hidden
+    CXX_VISIBILITY_PRESET hidden
 )
 
 # Link against OpenFX
 target_link_libraries(colorFill PRIVATE openfx::openfx)
 
-# Set installation directory
-install(TARGETS colorFill
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/colorFill.ofx.bundle/Contents/${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}
-)
+# Configure and install Info.plist
+set(PLUGIN_NAME colorFill)
+set(PLUGIN_EXE colorFill.ofx)
+set(BUNDLE_IDENTIFIER com.joss.colorFill)
+set(PLUGIN_VERSION "1.0.0")
 
-# Copy the Info.plist file (you need to create this file)
-install(FILES ${CMAKE_SOURCE_DIR}/Info.plist
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/colorFill.ofx.bundle/Contents
+configure_file(${CMAKE_SOURCE_DIR}/Info.plist.in
+               "${PLUGIN_INSTALLDIR}/colorFill.ofx.bundle/Contents/Info.plist")
+
+# Install plugin binary to proper OFX bundle structure
+install(TARGETS colorFill
+    DESTINATION "${PLUGIN_INSTALLDIR}/colorFill.ofx.bundle/Contents/${ARCHDIR}"
 )

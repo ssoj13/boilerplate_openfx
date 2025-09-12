@@ -51,7 +51,7 @@ mDeclarePluginFactory(ColorFillPluginFactory, {}, {});
 void ColorFillPluginFactory::describe(OFX::ImageEffectDescriptor &desc)
 {
     desc.setLabels("ColorFill", "ColorFill", "Color Fill");
-    desc.setPluginGrouping("Custom");
+    desc.setPluginGrouping("Joss_examples");
     desc.addSupportedContext(eContextFilter);
     desc.addSupportedContext(eContextGeneral);
     desc.addSupportedBitDepth(eBitDepthUByte);
