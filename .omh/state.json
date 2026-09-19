@@ -1,0 +1,27 @@
+{
+  "recent_files": [
+    "C:/projects/projects.openfx/boilerplate_openfx/DIAGRAMS.md",
+    "C:/projects/projects.openfx/boilerplate_openfx/AGENTS.md",
+    "C:/projects/projects.openfx/boilerplate_openfx/README.md",
+    "C:/projects/projects.openfx/boilerplate_openfx/bootstrap.py",
+    "C:/projects/projects.openfx/boilerplate_openfx/CMakeLists.txt",
+    "C:/projects/projects.openfx/boilerplate_openfx/cmake/OfxPlugin.cmake",
+    "C:/projects/projects.openfx/boilerplate_openfx/common/CMakeLists.txt",
+    "C:/projects/projects.openfx/boilerplate_openfx/common/include/ofxc/ofxc.h",
+    "C:/projects/projects.openfx/boilerplate_openfx/plan1.md",
+    "C:/projects/projects.openfx/boilerplate_openfx/.github/workflows/release.yml",
+    "C:/projects/projects.openfx/boilerplate_openfx/build.cmd",
+    "C:/projects/projects.openfx/boilerplate_openfx/conanfile.py"
+  ],
+  "last_failure": null,
+  "session": {
+    "id": "b0e0478c-746c-4fe3-bde8-c05e27eb25cf",
+    "tools": 73,
+    "agents": 0,
+    "skills": 1,
+    "last_skill": "bughunt",
+    "continuations": 0,
+    "prompt_at": 1789784468,
+    "running": []
+  }
+}

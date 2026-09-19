@@ -1,45 +1,45 @@
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import copy
+from conan.errors import ConanInvalidConfiguration
+from conan.tools.build import check_min_cppstd
+from conan.tools.cmake import CMake, cmake_layout
+from conan.tools.files import load
 import os
 
-class ColorFillPlugin(ConanFile):
-    name = "colorfill-plugin"
-    version = "1.0.0"
-    
-    # Package metadata
-    license = "Custom"
-    description = "ColorFill OpenFX Plugin"
-    
-    # Binary configuration
+
+class OfxPluginsConan(ConanFile):
+    name = "ofx-plugins"
+    license = "MIT"
+    author = "Alex Khal <joss13@gmail.com>"
+    description = "OpenFX plugin series (template)"
+
     settings = "os", "arch", "compiler", "build_type"
-    
-    # Requirements
+    generators = "CMakeDeps", "CMakeToolchain"
+    exports = "version.txt"
+    exports_sources = "CMakeLists.txt", "version.txt", "cmake/*", "common/*", "plugins/*", "templates/*"
+
+    def set_version(self):
+        self.version = load(self, os.path.join(self.recipe_folder, "version.txt")).strip()
+
     def requirements(self):
-        self.requires("openfx/[>=1.4.0]")
-    
-    # Layout
+        # Pinned: openfx >= 1.5 requires C++17
+        self.requires("openfx/1.5.1")
+
+    def validate(self):
+        check_min_cppstd(self, 17)
+        # Plugins link the MSVC runtime statically: hosts may already have an older
+        # msvcp140.dll loaded, and the OFX C API passes no CRT objects across the boundary.
+        if self.settings.compiler == "msvc" and self.settings.compiler.runtime != "static":
+            raise ConanInvalidConfiguration(
+                "MSVC runtime must be static: pass -s compiler.runtime=static (bootstrap.py does)")
+
     def layout(self):
         cmake_layout(self)
-    
-    # Generate files
-    def generate(self):
-        deps = CMakeDeps(self)
-        deps.generate()
-        
-        tc = CMakeToolchain(self)
-        if self.settings.os == "Windows":
-            tc.preprocessor_definitions["WINDOWS"] = 1
-            tc.preprocessor_definitions["NOMINMAX"] = 1
-        tc.generate()
-    
-    # Build
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-    
-    # Package (optional, for when building as a package)
+
     def package(self):
-        copy(self, "*.ofx", src=self.build_folder, dst=os.path.join(self.package_folder, "bin"), keep_path=False)
-        copy(self, "Info.plist", src=self.source_folder, dst=os.path.join(self.package_folder, "bundle"))
+        cmake = CMake(self)
+        cmake.install()

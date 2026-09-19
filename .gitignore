@@ -35,3 +35,10 @@ Makefile
 *.swo
 .vscode/
 .idea/
+
+# Conan-generated
+CMakeUserPresets.json
+
+# Local install/package output
+dist/
+release/

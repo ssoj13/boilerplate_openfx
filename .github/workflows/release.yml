@@ -5,8 +5,11 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: write
+
 jobs:
-  build-and-release:
+  release:
     name: Build and Release Windows
     runs-on: windows-latest
 
@@ -14,129 +17,31 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v5
 
+    - name: Check tag matches version.txt
+      shell: bash
+      run: |
+        v="$(tr -d '[:space:]' < version.txt)"
+        [ "v$v" = "${{ github.ref_name }}" ] || { echo "Tag ${{ github.ref_name }} != version.txt ($v)"; exit 1; }
+
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
         python-version: '3.12'
 
     - name: Install Conan
-      shell: cmd
-      run: |
-        python -m pip install --upgrade pip
-        pip install conan
-
-    - name: Configure Conan
-      shell: cmd
-      run: |
-        conan profile detect --force
-
-    - name: Install dependencies
-      shell: cmd
-      run: |
-        conan install . --output-folder=build --build=missing --settings=build_type=Release
-
-    - name: Configure CMake
-      shell: cmd
-      run: |
-        cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE="build/generators/conan_toolchain.cmake" -DCMAKE_BUILD_TYPE=Release
+      run: pip install conan
 
     - name: Build
-      shell: cmd
-      run: |
-        cmake --build build --config Release
+      run: python bootstrap.py b
 
-    - name: Package artifacts
-      shell: cmd
-      run: |
-        echo "=== Looking for compiled plugin files ==="
-        dir /s build | findstr "\.ofx"
-        
-        echo "=== Creating release package ==="
-        mkdir release 2>nul || echo Directory exists
-        mkdir "release\colorFill.ofx.bundle\Contents\Win64" 2>nul || echo Bundle dir exists
-        
-        echo "=== Copying plugin binary ==="
-        if exist "build\Release\*.ofx" (
-          copy "build\Release\*.ofx" "release\colorFill.ofx.bundle\Contents\Win64\"
-          copy "build\Release\*.ofx" release\
-          echo Plugin binary copied successfully
-        ) else (
-          echo ERROR: No .ofx files found in build\Release
-          dir "build\Release"
-        )
-        
-        echo "=== Copying generated Info.plist ==="
-        set PLIST_SRC=build\C\Program Files\Common Files\OFX\Plugins\Joss_examples\colorFill.ofx.bundle\Contents\Info.plist
-        if exist "%PLIST_SRC%" (
-          copy "%PLIST_SRC%" "release\colorFill.ofx.bundle\Contents\"
-          echo Info.plist copied from CMake generated location
-        ) else (
-          echo ERROR: Info.plist not found at expected location: %PLIST_SRC%
-          echo Build directory contents:
-          dir /s build
-          exit /b 1
-        )
-        
-        echo "=== Copying documentation ==="
-        if exist "LICENSE*" copy "LICENSE*" release\
-        if exist "README.md" copy "README.md" release\
-        if exist "CHANGELOG*" copy "CHANGELOG*" release\
-        
-        echo "=== Creating README for users ==="
-        echo ColorFill OpenFX Plugin - Installation Instructions > release\INSTALL.txt
-        echo ================================================== >> release\INSTALL.txt
-        echo. >> release\INSTALL.txt
-        echo CONTENTS: >> release\INSTALL.txt
-        echo - colorFill.ofx.dll        : Direct plugin file >> release\INSTALL.txt
-        echo - colorFill.ofx.bundle/    : Complete OpenFX bundle >> release\INSTALL.txt
-        echo - Info.plist              : Bundle metadata >> release\INSTALL.txt
-        echo - README.md               : Project documentation >> release\INSTALL.txt
-        echo - Any additional DLLs     : Runtime dependencies >> release\INSTALL.txt
-        echo. >> release\INSTALL.txt
-        echo INSTALLATION OPTIONS: >> release\INSTALL.txt
-        echo. >> release\INSTALL.txt
-        echo Option 1 - Bundle Installation (Recommended): >> release\INSTALL.txt
-        echo   Copy the entire colorFill.ofx.bundle folder to: >> release\INSTALL.txt
-        echo   - Nuke: C:\Program Files\Nuke##\plugins\ >> release\INSTALL.txt
-        echo   - Resolve: C:\Program Files\Blackmagic Design\DaVinci Resolve\OFX\Plugins\ >> release\INSTALL.txt
-        echo   - User: %%USERPROFILE%%\AppData\Roaming\OFX\Plugins\ >> release\INSTALL.txt
-        echo. >> release\INSTALL.txt
-        echo Option 2 - Direct DLL Installation: >> release\INSTALL.txt
-        echo   Copy colorFill.ofx.dll (and any other DLLs) to plugins folder >> release\INSTALL.txt
-        echo. >> release\INSTALL.txt
-        echo After installation, restart your host application. >> release\INSTALL.txt
-        echo Plugin should appear under Color or Custom effects. >> release\INSTALL.txt
-        
-        echo "=== Contents of release directory ==="
-        dir /s release
+    - name: Check
+      run: python bootstrap.py c
 
-    - name: Upload Release Assets
-      uses: actions/upload-artifact@v4
-      with:
-        name: openfx-plugin-windows
-        path: release/
+    - name: Package bundle
+      run: python bootstrap.py p
 
-  create-release:
-    name: Create GitHub Release
-    needs: build-and-release
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v5
-      
-    - name: Download all artifacts
-      uses: actions/download-artifact@v5
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
       with:
-        path: artifacts
-      
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          artifacts/**/*
+        files: dist/*.zip
         generate_release_notes: true
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
