@@ -4,127 +4,179 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Conan](https://img.shields.io/badge/Conan-2.x-blue.svg)](https://conan.io/)
 [![OpenFX](https://img.shields.io/badge/OpenFX-1.5-green.svg)](https://openeffects.org/)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 
-Monorepo template for a series of OpenFX plugins. One command scaffolds a new plugin,
-one command builds, checks and packages all of them. OpenFX SDK comes from Conan.
+**A production-ready starting point for writing a whole series of OpenFX plugins** for DaVinci Resolve,
+Nuke, Natron, Flame, Vegas and other OFX hosts.
 
-![DaVinci Resolve Plugin](docs/davinci20.png)
+Scaffold a new plugin with one command, build and verify all of them with another, and ship a
+zipped release from a git tag. The OpenFX SDK comes from Conan, so there are no submodules to
+vendor and no SDK to build by hand.
 
-**What you get:**
-- `bootstrap.py` — build/install/check/package + `new <Name>` plugin scaffolding (stdlib Python)
-- `add_ofx_plugin_bundle()` — one CMake call per plugin, correct `.ofx.bundle` layout per OFX spec
-- `ofxc` shared header — pixel-format dispatch (8/16/32-bit × RGBA/RGB/Alpha), image fetch/validation,
-  multi-threaded `OFX::ImageProcessor` runner, series-wide descriptor defaults, plugin registration
-- Examples: **ColorFill** (generator) and the **template** (Gain filter with `isIdentity`)
-- C++17, static MSVC runtime (the `.ofx` depends only on `KERNEL32.dll`)
-- CI builds + verifies every push; tags publish a zipped release
+![ColorFill in DaVinci Resolve](docs/davinci20.png)
 
-## Project structure
+## Why
 
+Writing the first OpenFX plugin is mostly fighting everything *around* the image processing:
+getting the SDK built, laying out the `.ofx.bundle` correctly, supporting 8/16/32-bit images
+without corrupting memory, respecting tiles and render windows, threading, and packaging for
+release. Doing it again for the second plugin is worse, because now it gets copy-pasted.
+
+This template does that work once, for every plugin in the repo:
+
+- **One command per plugin**: `python bootstrap.py new MyGlow`. It generates a working filter
+  that CMake finds automatically.
+- **Shared, tested plumbing**: pixel-format dispatch, image validation, multi-threaded processing
+  and plugin registration live in one header (`ofxc`), not in every plugin.
+- **Correct by construction**: pixels are only accessed through `getPixelAddress()`; every declared
+  bit depth and component layout gets its own template instantiation; the filter context gets its
+  mandatory `Source` clip; bundles follow the OFX packaging spec.
+- **Self-contained binaries**: the MSVC runtime is linked statically, so each `.ofx` depends only on
+  `KERNEL32.dll` and can't clash with whatever `msvcp140.dll` the host has already loaded.
+- **Verified output**: `bootstrap.py c` installs every bundle into a staging folder and checks
+  `Info.plist`, the folder layout and the exported OFX entry points. CI runs the same check.
+
+## Quick start
+
+**Requirements:** Python 3.8+, CMake 3.23+, Visual Studio 2022+, Conan 2 *or* [uv](https://docs.astral.sh/uv/)
+(if `conan` isn't on `PATH`, `bootstrap.py` runs it through `uvx conan`).
+
+```sh
+git clone https://github.com/ssoj13/boilerplate_openfx.git
+cd boilerplate_openfx
+python bootstrap.py b      # conan install + configure + build all plugins
+python bootstrap.py c      # verify every bundle
+python bootstrap.py i      # install into C:\Program Files\Common Files\OFX\Plugins\Joss_examples (admin)
 ```
-├── plugins/
-│   └── colorFill/
-│       ├── CMakeLists.txt      # add_ofx_plugin_bundle(colorFill ID ... SOURCES ...)
-│       └── colorFill.cpp       # plugin implementation
-├── common/include/ofxc/ofxc.h  # shared helpers for all plugins
-├── templates/plugin/           # scaffold used by `bootstrap.py new` (compiled on every build)
-├── cmake/
-│   ├── OfxPlugin.cmake         # add_ofx_plugin_bundle()
-│   └── Info.plist.in           # bundle plist template
-├── CMakeLists.txt              # series metadata (group, bundle-id prefix), plugin discovery
-├── conanfile.py                # OpenFX SDK dependency, runtime/C++ policy
-├── version.txt                 # series version (single source of truth)
-├── bootstrap.py                # build driver
-└── build.cmd                   # Windows one-click: build + install
-```
 
-## Build
+Restart the host. The plugins appear in the `Joss_examples` group.
 
-**Prerequisites:** Python 3.8+, CMake 3.23+, Conan 2.x (or [uv](https://docs.astral.sh/uv/) — `uvx conan` is used automatically), Visual Studio 2022+
+## Your own plugin in a minute
 
-```cmd
-python bootstrap.py b            &rem build all plugins (runs conan install when needed)
-python bootstrap.py b colorFill  &rem build one plugin
-python bootstrap.py c            &rem verify bundles: plist, layout, OFX exports
-python bootstrap.py p            &rem dist/<bundles> + dist/<repo>-<version>-win64.zip
-python bootstrap.py h            &rem all commands
-```
-
-Or just run `build.cmd` (build + install into the system OFX folder).
-
-Under the hood: `conan install . -s compiler.cppstd=17 -s compiler.runtime=static`, then
-`cmake --preset conan-default` and `cmake --build --preset conan-release`.
-The Visual Studio version comes from your Conan profile. `build/`, `dist/` and
-`CMakeUserPresets.json` are generated and not tracked.
-
-## New plugin
-
-```cmd
+```sh
 python bootstrap.py new MyGlow --id com.yourcompany.MyGlow --label "My Glow"
 python bootstrap.py b myGlow
+python bootstrap.py i myGlow --prefix ./my-plugins
 ```
 
-This creates `plugins/myGlow/` from `templates/plugin/` (a working Gain filter). CMake finds it automatically.
-Then:
-1. Replace the processor's `multiThreadProcessImages()` with your algorithm.
-2. Add parameters in `describeInContext()` and fetch them in the constructor.
-3. Adjust contexts/components in `describe()` / `describeInContext()`.
+`plugins/myGlow/` now holds a working **Gain** filter: a `Source` input, a parameter page, an
+`isIdentity` shortcut, and a multi-threaded processor for 8/16/32-bit RGBA and Alpha. Replace the
+per-pixel code with your algorithm:
 
-The plugin **ID** is what hosts store in saved projects: pick it once and never change it.
-Per-plugin `VERSION` and `BUNDLE_ID` can be passed to `add_ofx_plugin_bundle()`; defaults come from
-`version.txt` and `OFX_BUNDLE_ID_PREFIX`. Series-wide settings live at the top of `CMakeLists.txt`.
-
-**Render pattern** (see `plugins/colorFill/colorFill.cpp`):
 ```cpp
-void render(const OFX::RenderArguments &args) override {
+void render(const OFX::RenderArguments &args) override
+{
     auto dst = ofxc::fetchImage(_dstClip, args);                  // validated, throws on failure
     auto src = ofxc::fetchImage(_srcClip, args, /*optional=*/true);
+    const double gain = _gain->getValueAtTime(args.time);
+
     ofxc::dispatchPixelFormat(*dst, [&](auto fmt) {               // 8/16/32-bit x RGBA/RGB/Alpha
-        MyProcessor<decltype(fmt)> processor(*this, src.get());
+        GainProcessor<decltype(fmt)> processor(*this, src.get(), gain);
         ofxc::runProcessor(processor, *dst, args);                // multi-threaded over renderWindow
     });
 }
 ```
-Inside the processor, access pixels only via `getPixelAddress(x, y)` and convert with
-`ofxc::toPixel` / `ofxc::fromPixel`.
 
-## Installation
+Inside the processor you work on one slice of rows with a concrete pixel type:
 
-- `python bootstrap.py i` — all bundles into `C:\Program Files\Common Files\OFX\Plugins\Joss_examples\` (needs admin rights)
-- `python bootstrap.py i colorFill --prefix <dir>` — one bundle into a custom folder
+```cpp
+void multiThreadProcessImages(OfxRectI window) override
+{
+    for (int y = window.y1; y < window.y2; ++y) {
+        if (_effect.abort()) return;
+        auto *dst = static_cast<PIX *>(_dstImg->getPixelAddress(window.x1, y));
+        for (int x = window.x1; x < window.x2; ++x, dst += nComps) {
+            // ofxc::fromPixel / ofxc::toPixel convert between storage and normalized values
+        }
+    }
+}
+```
 
-Manual: copy `<name>.ofx.bundle` folders into your host's OFX plugin folder:
-- **Nuke:** `C:\Program Files\Nuke##\plugins\`
-- **Resolve:** `C:\Program Files\Blackmagic Design\DaVinci Resolve\OFX\Plugins\`
-- **Common:** `C:\Program Files\Common Files\OFX\Plugins\`
+The plugin **ID** is what hosts save in project files. Choose it once and never change it.
 
-## Usage
+## Commands
 
-Restart your host app. Plugins show up under the `Joss_examples` group.
+| Command | What it does |
+|---|---|
+| `python bootstrap.py b [name]` | Build all plugins or one. Runs `conan install` automatically on first use or when `conanfile.py` / `version.txt` change |
+| `python bootstrap.py c` | Stage-install and verify every bundle: plist, layout, OFX exports |
+| `python bootstrap.py i [name] [--prefix DIR]` | Install all bundles or one (default: system OFX folder) |
+| `python bootstrap.py p` | `dist/` with all bundles + `LICENSE` + `README.md`, zipped |
+| `python bootstrap.py new <Name> [--id ID] [--label TEXT]` | Create `plugins/<name>/` from the template |
+| `python bootstrap.py d` | Only `conan install` |
+| `python bootstrap.py cl` | Remove `build/`, `dist/`, `CMakeUserPresets.json` |
+| `-d` / `--fresh` | Debug build / force `conan install` |
 
-**Nuke Python:**
-```python
-colorFill = nuke.createNode("ColorFill")
-colorFill['color'].setValue([1.0, 0.0, 0.0, 1.0])
+## Layout
+
+```
+plugins/
+  colorFill/                 generator example: fills the frame with a colour
+    CMakeLists.txt           add_ofx_plugin_bundle(colorFill ID ... LABEL ... SOURCES ...)
+    colorFill.cpp
+common/include/ofxc/ofxc.h   shared helpers used by every plugin
+templates/plugin/            scaffold for `bootstrap.py new`, compiled on every build so it never rots
+cmake/
+  OfxPlugin.cmake            add_ofx_plugin_bundle(): target, compile defines, Info.plist, bundle install
+  Info.plist.in
+CMakeLists.txt               series settings (menu group, bundle-id prefix), plugin discovery
+conanfile.py                 OpenFX SDK 1.5.1, C++17, static MSVC runtime policy
+version.txt                  series version, the single source of truth
+bootstrap.py                 build driver, stdlib-only Python
+```
+
+Every plugin installs as its own bundle, as the OFX spec requires:
+
+```
+<prefix>/myGlow.ofx.bundle/Contents/Info.plist
+<prefix>/myGlow.ofx.bundle/Contents/Win64/myGlow.ofx
+```
+
+## Configuration
+
+- **Series:** `OFX_PLUGIN_GROUPING` (host menu group and install folder) and `OFX_BUNDLE_ID_PREFIX`
+  at the top of `CMakeLists.txt`.
+- **Version:** `version.txt`. It feeds CMake, Conan, `Info.plist` and the OFX plugin version.
+- **Per plugin:** `add_ofx_plugin_bundle(<name> ID <id> [LABEL] [BUNDLE_ID] [VERSION] SOURCES ...)`.
+
+## Design notes
+
+- **Static MSVC runtime.** Microsoft generally recommends `/MD` for DLLs, because CRT objects
+  passed across DLL boundaries break with separate CRTs, and because of the old 128-slot FLS limit.
+  Neither applies here: the OFX API is plain C and passes no CRT objects, and Windows 10 1903 raised
+  the FLS limit to 4000. In exchange, the plugin doesn't depend on the host's VC++ runtime version.
+  `conanfile.py` rejects a dynamic runtime.
+- **`MODULE` libraries.** Plugins are loaded with `LoadLibrary`/`dlopen` and never linked against,
+  so no import libraries are produced.
+- **Own `add_ofx_plugin_bundle()`.** The `add_ofx_plugin()` helper from the OpenFX Conan package
+  writes `Info.plist` into the install folder at configure time and hardcodes an SDK-internal
+  template path, so it isn't used.
+- **Template check.** `templates/plugin` is instantiated and compiled on every build
+  (`OFX_BUILD_TEMPLATE_CHECK`, not installed). A broken scaffold fails CI right away instead of
+  failing the next person who runs `new`.
+
+## CI and releases
+
+- **Every push/PR to `main`:** build, check, package, and upload the bundles as an artifact
+  (`.github/workflows/ci.yml`).
+- **Tag `v<version.txt>`:** the same pipeline, plus a GitHub Release with the zip. The workflow
+  refuses to run if the tag and `version.txt` disagree.
+
+```sh
+git tag v1.0.0 && git push origin v1.0.0
 ```
 
 ## Troubleshooting
 
-- **Plugin missing:** wrong folder or bundle layout (`python bootstrap.py c` verifies it), or the host needs a restart. Nuke blacklists plugins that failed to load once; touch the `.ofx` to retry.
-- **Build fails after changing toolchain/profile:** `python bootstrap.py cl` then `b`.
-- **`MSVC runtime must be static`:** you ran `conan install` by hand; add `-s compiler.runtime=static` or use `bootstrap.py`.
-
-## GitHub Actions and releases
-
-CI builds and checks every push/PR to `main` and uploads the bundles as an artifact.
-Push a tag equal to `v` + `version.txt` to publish a GitHub Release with the zipped bundles:
-```bash
-git tag v1.0.0 && git push origin v1.0.0
-```
+- **Plugin doesn't show up:** run `python bootstrap.py c` to validate the bundle, then restart the
+  host. Nuke blacklists plugins that failed to load once; touch the `.ofx` file to make it retry.
+- **Build breaks after a toolchain or profile change:** `python bootstrap.py cl`, then `b`.
+- **`MSVC runtime must be static`:** you ran `conan install` by hand. Add
+  `-s compiler.runtime=static`, or use `bootstrap.py`.
 
 ## License
 
-[MIT](LICENSE) © Alex Khal
+[MIT](LICENSE) © 2026 Alex Khal
 
 ## Acknowledgements
 

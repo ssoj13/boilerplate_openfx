@@ -38,8 +38,6 @@ flowchart LR
     p --> zip[copy LICENSE/README, zip dist]
     c --> chk[stage → plist, layout, PE/nm exports]
     cl[cl] --> rm[rm build/ dist/ CMakeUserPresets.json]
-    cmd[build.cmd] --> b
-    cmd --> i
     ci[ci.yml / release.yml] --> b
     ci --> c
     ci --> p

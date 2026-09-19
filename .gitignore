@@ -41,4 +41,6 @@ CMakeUserPresets.json
 
 # Local install/package output
 dist/
-release/
+
+# Local agent/harness state
+.omh/

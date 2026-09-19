@@ -2,7 +2,7 @@
 """
 bootstrap.py - Unified local build/install/check script for the OpenFX plugin series.
 
-Cross-platform, Python 3.8+, stdlib only. Adapted from gitnexus-rs bootstrap.
+Cross-platform, Python 3.8+, stdlib only.
 
 Dependencies (OpenFX SDK) come from Conan; CMake is driven through the presets
 that `conan install` generates (no hardcoded generator / toolchain path).

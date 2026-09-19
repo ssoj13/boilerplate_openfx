@@ -9,7 +9,6 @@ Windows-first (static MSVC runtime), layout follows the OFX packaging spec for m
 | What | Where |
 |------|-------|
 | Build driver (SSOT for build commands) | `bootstrap.py` — `d`, `b [name]`, `i [name]`, `p`, `c`, `new <Name>`, `cl` |
-| Windows one-click | `build.cmd` → `bootstrap.py b` + `i` |
 | CI / Release | `.github/workflows/ci.yml`, `release.yml` → `bootstrap.py b`, `c`, `p` |
 | Series version (SSOT) | `version.txt` (CMake `project(VERSION)`, Conan `set_version`, plist, factory version) |
 | Series metadata | top of `CMakeLists.txt`: `OFX_PLUGIN_GROUPING`, `OFX_BUNDLE_ID_PREFIX` |
@@ -17,7 +16,6 @@ Windows-first (static MSVC runtime), layout follows the OFX packaging spec for m
 | Bundle/target logic | `cmake/OfxPlugin.cmake` |
 | Shared C++ helpers | `common/include/ofxc/ofxc.h` (header-only target `ofx_common`) |
 | Plugin scaffold | `templates/plugin/` (tokens `@PLUGIN_NAME@ @PLUGIN_CLASS@ @PLUGIN_ID@ @PLUGIN_LABEL@`) |
-| Open work / history | latest `planN.md` |
 
 ## Build pipeline
 
